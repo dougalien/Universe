@@ -156,13 +156,20 @@ def E_z(z):
     return np.sqrt(OMEGA_M * (1.0 + z_arr) ** 3 + OMEGA_LAMBDA)
 
 
+def integrate_trapezoid(y, x):
+    """NumPy-compatible trapezoid integration."""
+    if hasattr(np, "trapezoid"):
+        return np.trapezoid(y, x)
+    return np.trapz(y, x)
+
+
 def comoving_distance_mpc(z, n_steps=2200):
     z_value = float(max(z, 0.0))
     if z_value == 0.0:
         return 0.0
     grid_steps = int(max(600, min(30000, n_steps)))
     z_grid = np.linspace(0.0, z_value, grid_steps)
-    integral = np.trapz(1.0 / E_z(z_grid), z_grid)
+    integral = integrate_trapezoid(1.0 / E_z(z_grid), z_grid)
     return (C_KM_S / H0_STANDARD) * integral
 
 
@@ -183,7 +190,7 @@ def lookback_time_gyr(z, n_steps=2200):
     grid_steps = int(max(600, min(30000, n_steps)))
     z_grid = np.linspace(0.0, z_value, grid_steps)
     integrand = 1.0 / ((1.0 + z_grid) * E_z(z_grid))
-    integral = np.trapz(integrand, z_grid)
+    integral = integrate_trapezoid(integrand, z_grid)
     H0_s = H0_STANDARD / MPC_TO_KM
     return integral / H0_s / SEC_PER_GYR
 
